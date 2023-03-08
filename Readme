@@ -1,0 +1,104 @@
+NodeJS App (project-api)
+_ Create a NodeJS project using npm init.
+_ Create a re-usable file functions lib in code base to read files.
+_ Build deployable nodejs app with the required apis for the following frontend app using the REST standard.
+_ Use projects.json and project-branches.json as data sources. \* Please keep scale in mind as the projects and project-branches could grow.
+
+ReactApp (Redux) (project-ui)
+_ Search field to display projects
+_ User can type project code, project branch code to find projects (Display ID and Project) --> use Api (1 or 6)
+_ A project can have multiple branches
+_ A branch can belong to multiple projects.
+_ Tap the project to show the project branches --> use API (5)
+_ Make the branches clickable -> Show all the projects with the branch. \* Add a back button on the screen to navigate back.
+
+Solution :
+
+        Requirement : Search Projects using projectCode or Project Branch Code
+        Step 1 : \* Create a POST API Endpoint /v1/api/search
+        body of Post Request
+        {
+        searchTerm : "project code or branch code",
+        page : activePageNumber
+        }
+
+        Api Response :
+        {
+            typeOfCode : "branch or project",
+            totalRecords : numberOfRecordsWeHave,
+            page: activePageNumber
+            data:[]
+        }
+
+        On UI Redux Structure :
+
+        * ProjectSlice : Map with Key as Project Code and value as Array Of Branches
+        * BranchesSlice : Map with Key as brachCode and Value as Array of Projects
+
+        UI Render :
+        1. Implement Pagination
+        2. before Performing search lookup redux store for the data to be displayed based on the page user is on. Default to page 1 and limit to 50.
+        3. If redux store does not contain data reach to api endpoint above to fetch the data.
+        2. Once data is received , Based on typeOfCode in the response, add the response data to the Respective redux slice reducer. This will be use full next time the user search. This avoids network call and boost user experience.
+        3. When Page is changed on the ui , grab data and its length  if we have enough records for that page to display show it , if not reach out to the api .
+        4. Repeat step 3 until data in redux matches the total record count we have.
+
+
+        Requirement: Tap the project to show the project branches
+
+        1. Implement Pagination.
+        2. Look up the redux store for data for particular project id .
+        3. If available render the branches information associated with it for page 1 , If not reach out to API and fetch the data
+        4. Update the respective redux slice reducer. This will be use fill next time the user click on the same project.
+        4. Repeat step 3 until data in redux matches the total record count we have.
+
+        API :
+         * Create a GET API Endpoint /v1/api/project/:projectId?page=:pageNumber
+
+        Api Response :
+        {
+            totalRecords : numberOfRecordsWeHaveForThisProduct,
+            page: activePageNumber
+            data:[branches for this project] // Page is 1 hence return first 50 as displaying only 50
+            page: activePageNumber // Default 1
+        }
+
+Requirement : Tap the project to show the project branches
+
+        1. Implement Pagination.
+        2. Look up the redux store for data for particular branch id .
+        3. If available render the branches information associated with it for page 1 , If not reach out to API and fetch the data
+        4. Update the respective redux slice reducer. This will be use fill next time the user click on the same project.
+        5. Repeat step 3 until data in redux matches the total record count we have.
+
+    API :
+         * Create a GET API Endpoint /v1/api/project-branches/:projectBranchId?page=:pageNumber
+         Api Response :
+        {
+            totalRecords : numberOfRecordsWeHaveForThisBranch,
+            page: activePageNumber
+            data:[Projects for this Branch] // Page is 1 hence return first 50 as displaying only 50
+            page: activePageNumber // Default 1
+        }
+
+UI url :
+
+https://domain-name/ --> Displays search Page
+https://domain-name/searchString=:searchString&page:pageNub --> Internally invokes /v1/api/search and updates the page url path.
+https://domain-name/project-details/:projectId?pageNumber -->
+https://domain-name/project-branch-details/:branchid?pageNumber -->
+
+Back Button Functionality :
+Maintain nested navigation using array and display using breadcome UI element. This helps to jump to anypoint.
+If user user navigates to a point where branches has a project that already in the navigation , remove the nested navigation from that index to avoid cycle.
+Back button : Clicking back button will remove the last element in the array .
+
+Few More Endpoints that may be useful as proj grows
+
+1. /v1/project/:code --> Gives Project based on code
+2. /v1/project/:name --> Gives Project based on name
+3. /v1/projects --> Gives you all Projects
+
+4. /v1/project-branches/ -->Gives All Project branches
+5. /v1/project-branches?code=:code -->
+6. /v1/project-branches/:branchCode --> {projectCode and project name}
