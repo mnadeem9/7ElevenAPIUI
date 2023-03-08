@@ -1,3 +1,5 @@
+I could not implement it as its gonna to take some time but here is the Implementation Plan for UI and API.
+
 NodeJS App (project-api)
 _ Create a NodeJS project using npm init.
 _ Create a re-usable file functions lib in code base to read files.
